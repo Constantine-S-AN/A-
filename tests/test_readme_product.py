@@ -5,6 +5,8 @@ def test_readme_contains_product_sections() -> None:
     readme_content = Path("README.md").read_text(encoding="utf-8")
 
     assert "# limitup-lab" in readme_content
+    assert "## English" in readme_content
+    assert "## 中文版" in readme_content
     assert "Live Demo (GitHub Pages)" in readme_content
     assert "## Screenshots" in readme_content
     assert "## Features" in readme_content

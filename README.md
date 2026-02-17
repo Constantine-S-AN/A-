@@ -1,16 +1,18 @@
 # limitup-lab
 
-Formal research toolkit for A-share limit-up ecosystem analysis and strategy health-checking (Phase 1, daily frequency).
-
 [Live Demo (GitHub Pages)](https://constantine-s-an.github.io/A-/)
+
+## English
+
+Formal research toolkit for A-share limit-up ecosystem analysis and strategy health-checking (Phase 1, daily frequency).
 
 ## Project Objective
 
-`limitup-lab` is designed to answer a practical question in quantitative research:
+`limitup-lab` is designed to answer a practical execution-realism question:
 
-How much of the observed limit-up premium remains after realistic tradability constraints are applied?
+How much of the observed limit-up premium remains after tradability constraints are applied?
 
-The project standardizes data ingestion, computes a reproducible label system, and compares strategy outcomes under alternative fill assumptions to expose potential backtest optimism.
+The toolkit standardizes input data, computes reproducible labels, and compares strategy outcomes under alternative fill assumptions to reduce backtest optimism.
 
 ## Screenshots
 
@@ -106,3 +108,82 @@ Roadmap:
 ## Compliance Note
 
 This project is for research and diagnostic analysis only. It does not implement live trading execution logic and should not be interpreted as investment advice.
+
+---
+
+## 中文版
+
+面向 A 股涨停板生态研究与策略体检的正式化工具包（Phase 1，日频）。
+
+## 项目目标
+
+`limitup-lab` 聚焦一个关键研究问题：
+
+当考虑真实可成交性约束后，涨停相关超额收益还能保留多少？
+
+本项目通过标准化数据输入、可复现标签体系与多成交假设对比，帮助识别“回测可得、实盘难得”的收益幻觉。
+
+## 核心能力
+
+- 规范化数据输入与 canonical schema（`CSV/Parquet -> canonical parquet`）
+- 真实数据接入：`fetch-akshare`（按 `ts_code` 拉取 A 股日线）
+- 日频标签体系：`limit_up`、`one_word`、`opened`、`sealed`、`streak_up`
+- 可交易性体检：`IDEAL` 与 `CONSERVATIVE` 成交假设并行评估
+- 敏感性分析：收益、回撤、胜率、可买入样本损失
+- 报告自动化：HTML、PNG fallback、交互图、CSV 导出
+- 站点化发布：`build-site` 产出 GitHub Pages 可部署目录
+
+## 研究流程
+
+1. 将原始日线与标的信息标准化为 canonical schema。
+2. 根据规则计算涨跌停价并生成日频生态标签。
+3. 统计连板结构与次日收益分布。
+4. 在不同 fill 假设下运行 `backtest` 对比收益稳健性。
+5. 输出研报与静态站点产物，支持审阅与归档。
+
+## 一键示例
+
+生成 demo 报告：
+
+```bash
+python -m limitup_lab run-demo
+```
+
+生成可部署站点：
+
+```bash
+python -m limitup_lab build-site --demo --out site
+```
+
+## 真实数据示例
+
+```bash
+python -m pip install akshare
+python -m limitup_lab fetch-akshare \
+  --symbols 002261.SZ,603598.SH,000957.SZ \
+  --start 20240101 \
+  --end 20240630 \
+  --out data/processed/real_case_2024h1
+python -m limitup_lab report \
+  --data data/processed/real_case_2024h1 \
+  --out reports/real_case_2024h1
+```
+
+详细说明见 `docs/real_data_example.md`。
+
+## 使用边界与路线图
+
+当前边界（Phase 1）：
+- 仅支持日频近似，无法刻画完整盘中开板/回封节奏。
+- 缺少分钟线与 L2 微观结构，排队成交与撤单竞争采用近似处理。
+- 制度变迁目前为配置驱动，尚未完成全量分阶段模拟。
+
+后续路线图：
+- 引入分钟线标签（首封时点、开板次数、回封质量）。
+- 引入 L2 / 逐笔特征（封单深度、撤单强度、成交压力）。
+- 增加按制度变迁自动分段回测。
+- 扩展到多策略组合与更细粒度成交价格模型。
+
+## 合规说明
+
+本项目仅用于研究与体检分析，不包含实盘交易执行逻辑，亦不构成任何投资建议。

@@ -30,20 +30,13 @@ jobs:
           pip install -e .
       - name: Generate README assets
         run: python scripts/generate_readme_assets.py
-      - name: Build site
-        run: python -m limitup_lab build-site --demo --out site
       - name: Install PDF dependencies (optional)
         continue-on-error: true
         run: |
           pip install playwright
           python -m playwright install --with-deps chromium
-      - name: Export demo PDF (with HTML zip fallback)
-        run: |
-          python -m limitup_lab export-pdf \
-            --html site/reports/demo/index.html \
-            --out site/demo.pdf \
-            --zip-fallback site/demo-html.zip \
-            --allow-fallback
+      - name: Build site
+        run: python -m limitup_lab build-site --demo --out site
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

@@ -1,8 +1,16 @@
 # limitup-lab
 
-日频视角拆解 A 股涨停板生态，并用可成交性假设体检策略结论，减少“回测能做、实盘做不到”的错觉。
+Formal research toolkit for A-share limit-up ecosystem analysis and strategy health-checking (Phase 1, daily frequency).
 
 [Live Demo (GitHub Pages)](https://constantine-s-an.github.io/A-/)
+
+## Project Objective
+
+`limitup-lab` is designed to answer a practical question in quantitative research:
+
+How much of the observed limit-up premium remains after realistic tradability constraints are applied?
+
+The project standardizes data ingestion, computes a reproducible label system, and compares strategy outcomes under alternative fill assumptions to expose potential backtest optimism.
 
 ## Screenshots
 
@@ -13,12 +21,20 @@
 ## Features
 
 - Canonical schema + ingest pipeline (`CSV/Parquet -> canonical parquet`)
-- 真实数据接入：`fetch-akshare`（A 股日线，按 `ts_code` 拉取）
-- 日频标签体系：`limit_up`, `one_word`, `opened`, `sealed`, `streak_up`
-- 策略体检：`IDEAL` vs `CONSERVATIVE` 两种 fill 假设并行比较
-- 敏感性分析：收益、回撤、胜率、可买入样本损失对比
-- 自动研报：HTML + PNG fallback + 交互图表 + 可导出 CSV
-- 一键静态站点产物：`build-site` 输出 `site/`，可直接发布到 Pages
+- Real market data integration via `fetch-akshare` (A-share daily bars by `ts_code`)
+- Daily label system: `limit_up`, `one_word`, `opened`, `sealed`, `streak_up`
+- Tradability health-check: `IDEAL` vs `CONSERVATIVE` fill assumptions
+- Sensitivity analysis for return, drawdown, win rate, and trade loss due to execution constraints
+- Automated report generation: HTML + PNG fallback + interactive charts + CSV exports
+- Static site packaging for GitHub Pages via `build-site`
+
+## Methodology
+
+1. Standardize raw bars and instrument metadata into canonical schemas.
+2. Compute exchange-rule-aware limit prices and limit-up state labels.
+3. Build streak and next-day return distributions by grouped conditions.
+4. Run `backtest` under multiple fill models to quantify execution realism.
+5. Publish report and site artifacts for review and auditability.
 
 ## Architecture
 
@@ -33,19 +49,21 @@ flowchart LR
 
 ## One-Command Demo
 
-生成 demo 报告：
+Generate a full demo report:
 
 ```bash
 python -m limitup_lab run-demo
 ```
 
-生成可发布站点：
+Build a deployable Pages artifact:
 
 ```bash
 python -m limitup_lab build-site --demo --out site
 ```
 
 ## Real Data Example
+
+Fetch real A-share daily bars and generate a report:
 
 ```bash
 python -m pip install akshare
@@ -59,17 +77,32 @@ python -m limitup_lab report \
   --out reports/real_case_2024h1
 ```
 
-详情见 `docs/real_data_example.md`。
+Detailed walkthrough: `docs/real_data_example.md`
+
+## CLI Reference
+
+- `ingest`: normalize local daily/instrument files and write parquet
+- `fetch-akshare`: pull real A-share daily bars from AkShare
+- `label`: compute phase-1 daily limit-up ecosystem labels
+- `stats`: aggregate baseline ecosystem statistics
+- `report`: generate research report from processed parquet
+- `run-demo`: execute fixture-based end-to-end demo
+- `export-pdf`: export report HTML to PDF with zip fallback
+- `build-site`: build deployable static site artifact
 
 ## Limitations & Roadmap
 
-当前限制（Phase 1）：
-- 仅日频近似，无法刻画盘中开板/回封节奏
-- 无分钟线与 L2 封单质量数据，无法评估真实排撤单竞争
-- 对制度变迁（涨跌幅规则、特殊时段政策）仅做静态配置，未做分阶段回放
+Current scope (Phase 1):
+- Daily-frequency approximation only; intraday dynamics are not modeled.
+- No 分钟线 / L2 order-book microstructure, so queueing and order competition are approximated.
+- Rule changes across market regimes (制度变迁) are configuration-driven, not yet fully segmented in simulation.
 
-Roadmap：
-- 引入分钟线标签（首封时点、开板次数、回封强度）
-- 引入 L2/逐笔特征（封单金额、撤单率、成交穿透）
-- 制度变迁分段回测（按日期生效规则自动切换）
-- 增加多策略组合与更细致的成交价格模型
+Roadmap:
+- Add 分钟线 labels (first seal timestamp, reopen count, reseal quality).
+- Add L2/transaction-level signals (order-book depth, cancel intensity, execution pressure).
+- Add regime-aware rule switching for制度变迁 period backtests.
+- Extend to multi-strategy portfolio-level diagnostics and richer fill price models.
+
+## Compliance Note
+
+This project is for research and diagnostic analysis only. It does not implement live trading execution logic and should not be interpreted as investment advice.

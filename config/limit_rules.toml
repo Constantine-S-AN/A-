@@ -1,0 +1,20 @@
+[MAIN]
+limit_up = 0.10
+limit_down = 0.10
+ipo_unlimited_days = 1
+
+[ST]
+limit_up = 0.05
+limit_down = 0.05
+ipo_unlimited_days = 1
+
+[STAR]
+limit_up = 0.20
+limit_down = 0.20
+ipo_unlimited_days = 5
+
+[CHINEXT]
+limit_up = 0.20
+limit_down = 0.20
+ipo_unlimited_days = 5
+

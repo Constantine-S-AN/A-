@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LimitUp Lab Phase 1 Report</title>
+  <link rel="stylesheet" href="{{ stylesheet_path }}" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+  {% if has_plotly and plotly_js_path %}
+  <script src="{{ plotly_js_path }}"></script>
+  {% endif %}
+</head>
+<body>
+  <main class="report-shell">
+    <header class="report-header">
+      <h1 class="report-title">A股涨停板生态研究报告（Phase 1 日频）</h1>
+      <p class="report-subtitle">数据范围：{{ data_start }} 至 {{ data_end }}</p>
+      <p class="report-subtitle">运行时间：{{ generated_at }}</p>
+      <p class="report-subtitle"><strong>免责声明：</strong>{{ disclaimer }}</p>
+    </header>
+
+    <section class="section" id="executive-summary">
+      <h2>一句话结论（Executive Summary）</h2>
+      <p>{{ executive_summary }}</p>
+    </section>
+
+    <section class="section" id="overview-kpi">
+      <h2>KPI Cards</h2>
+      <section class="metrics-grid">
+        <article class="metric-card">
+          <div class="label">样本数</div>
+          <div class="value">{{ kpi_metrics.sample_count }}</div>
+        </article>
+        <article class="metric-card">
+          <div class="label">涨停数</div>
+          <div class="value">{{ kpi_metrics.limit_up_count }}</div>
+        </article>
+        <article class="metric-card">
+          <div class="label">封死比例</div>
+          <div class="value">{{ "%.2f%%"|format(kpi_metrics.sealed_ratio * 100) }}</div>
+        </article>
+        <article class="metric-card">
+          <div class="label">一字板比例</div>
+          <div class="value">{{ "%.2f%%"|format(kpi_metrics.one_word_ratio * 100) }}</div>
+        </article>
+        <article class="metric-card">
+          <div class="label">次日溢价中位数</div>
+          <div class="value">{{ "%.2f%%"|format(kpi_metrics.next_day_premium_median * 100) }}</div>
+        </article>
+        <article class="metric-card">
+          <div class="label">IDEAL vs CONS 差值</div>
+          <div class="value {{ 'status-positive' if kpi_metrics.ideal_cons_gap >= 0 else 'status-negative' }}">
+            {{ "%.2f%%"|format(kpi_metrics.ideal_cons_gap * 100) }}
+          </div>
+        </article>
+      </section>
+    </section>
+
+    <section class="section" id="toc">
+      <h2>研报目录（TOC）</h2>
+      <p class="toc-links">
+        <a href="#overview">Overview</a> /
+        <a href="#ecosystem">Ecosystem</a> /
+        <a href="#premium">Premium</a> /
+        <a href="#tradability">Tradability</a> /
+        <a href="#sensitivity">Sensitivity</a> /
+        <a href="#caveats">Caveats</a>
+      </p>
+    </section>
+
+    <section class="section" id="overview">
+      <h2>Overview</h2>
+      <p>
+        本报告回答三个核心问题：连板结构是否集中、涨停后次日溢价是否稳定、以及在保守成交假设下策略收益是否显著回落。
+      </p>
+    </section>
+
+    <section class="section" id="ecosystem">
+      <h2>Ecosystem</h2>
+      <div class="chart-grid">
+        <article class="chart-card">
+          <header>{{ charts.streak_distribution.title }}</header>
+          <p class="chart-note">{{ charts.streak_distribution.description }}</p>
+          <div class="plotly-wrapper" id="{{ charts.streak_distribution.chart_id }}_wrapper">
+            <div class="plotly-host" id="{{ charts.streak_distribution.chart_id }}"></div>
+            <img class="plotly-fallback" src="{{ charts.streak_distribution.fallback_png }}" alt="{{ charts.streak_distribution.title }} fallback" />
+          </div>
+          <script type="application/json" id="{{ charts.streak_distribution.chart_id }}_json">{{ charts.streak_distribution.plotly_json }}</script>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="premium">
+      <h2>Premium</h2>
+      <div class="chart-grid">
+        <article class="chart-card">
+          <header>{{ charts.premium_by_streak.title }}</header>
+          <p class="chart-note">{{ charts.premium_by_streak.description }}</p>
+          <div class="plotly-wrapper" id="{{ charts.premium_by_streak.chart_id }}_wrapper">
+            <div class="plotly-host" id="{{ charts.premium_by_streak.chart_id }}"></div>
+            <img class="plotly-fallback" src="{{ charts.premium_by_streak.fallback_png }}" alt="{{ charts.premium_by_streak.title }} fallback" />
+          </div>
+          <script type="application/json" id="{{ charts.premium_by_streak.chart_id }}_json">{{ charts.premium_by_streak.plotly_json }}</script>
+        </article>
+      </div>
+
+      {% if group_rows %}
+      <p><a href="{{ csv_paths.group_quantiles }}" download>导出分组分位数 CSV</a></p>
+      <div class="table-wrap">
+        <table id="table_group_quantiles">
+          <thead>
+            <tr>
+              <th>streak_up</th>
+              <th>one_word</th>
+              <th>opened</th>
+              <th>count</th>
+              <th>next_open_p10</th>
+              <th>next_open_p50</th>
+              <th>next_open_p90</th>
+              <th>next_close_p10</th>
+              <th>next_close_p50</th>
+              <th>next_close_p90</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in group_rows %}
+            <tr>
+              <td>{{ row.streak_up }}</td>
+              <td>{{ row.one_word }}</td>
+              <td>{{ row.opened }}</td>
+              <td>{{ row.count }}</td>
+              <td>{{ "%.4f"|format(row.next_open_ret_p10) }}</td>
+              <td>{{ "%.4f"|format(row.next_open_ret_p50) }}</td>
+              <td>{{ "%.4f"|format(row.next_open_ret_p90) }}</td>
+              <td>{{ "%.4f"|format(row.next_close_ret_p10) }}</td>
+              <td>{{ "%.4f"|format(row.next_close_ret_p50) }}</td>
+              <td>{{ "%.4f"|format(row.next_close_ret_p90) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p>暂无可展示分组统计数据。</p>
+      {% endif %}
+    </section>
+
+    <section class="section" id="tradability">
+      <h2>Tradability</h2>
+      <p>
+        封死与非封死样本的次日溢价分布差异，反映“看得到的涨停”与“买得到的涨停”之间的鸿沟。
+      </p>
+      <div class="chart-grid">
+        <article class="chart-card">
+          <header>{{ charts.sealed_nonsealed.title }}</header>
+          <p class="chart-note">{{ charts.sealed_nonsealed.description }}</p>
+          <div class="plotly-wrapper" id="{{ charts.sealed_nonsealed.chart_id }}_wrapper">
+            <div class="plotly-host" id="{{ charts.sealed_nonsealed.chart_id }}"></div>
+            <img class="plotly-fallback" src="{{ charts.sealed_nonsealed.fallback_png }}" alt="{{ charts.sealed_nonsealed.title }} fallback" />
+          </div>
+          <script type="application/json" id="{{ charts.sealed_nonsealed.chart_id }}_json">{{ charts.sealed_nonsealed.plotly_json }}</script>
+        </article>
+      </div>
+      <p><a href="{{ csv_paths.trades }}" download>导出交易清单 CSV</a></p>
+      <div class="table-wrap">
+        <table id="table_trades">
+          <thead>
+            <tr>
+              <th>strategy_name</th>
+              <th>fill_model</th>
+              <th>ts_code</th>
+              <th>entry_date</th>
+              <th>entry_price</th>
+              <th>exit_date</th>
+              <th>exit_price</th>
+              <th>ret_net</th>
+              <th>ret_pct</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in trades_rows %}
+            <tr>
+              <td>{{ row.strategy_name }}</td>
+              <td>{{ row.fill_model }}</td>
+              <td>{{ row.ts_code }}</td>
+              <td>{{ row.entry_date }}</td>
+              <td>{{ "%.4f"|format(row.entry_price) }}</td>
+              <td>{{ row.exit_date }}</td>
+              <td>{{ "%.4f"|format(row.exit_price) }}</td>
+              <td class="{{ 'status-positive' if row.ret_net >= 0 else 'status-negative' }}">{{ "%.4f"|format(row.ret_net) }}</td>
+              <td class="{{ 'status-positive' if row.ret_pct >= 0 else 'status-negative' }}">{{ "%.2f"|format(row.ret_pct) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="sensitivity">
+      <h2>Sensitivity</h2>
+      <section class="metrics-grid">
+        {% for row in compare_rows %}
+        <article class="metric-card">
+          <div class="label">{{ row.fill_model }} 总收益</div>
+          <div class="value {{ 'status-positive' if row.total_return >= 0 else 'status-negative' }}">
+            {{ "%.2f%%"|format(row.total_return * 100) }}
+          </div>
+          <div class="label">最大回撤 {{ "%.2f%%"|format(row.max_drawdown * 100) }} / 交易数 {{ row.trade_count }}</div>
+        </article>
+        {% endfor %}
+      </section>
+      <div class="chart-grid">
+        <article class="chart-card">
+          <header>{{ charts.sensitivity_compare.title }}</header>
+          <p class="chart-note">{{ charts.sensitivity_compare.description }}</p>
+          <div class="plotly-wrapper" id="{{ charts.sensitivity_compare.chart_id }}_wrapper">
+            <div class="plotly-host" id="{{ charts.sensitivity_compare.chart_id }}"></div>
+            <img class="plotly-fallback" src="{{ charts.sensitivity_compare.fallback_png }}" alt="{{ charts.sensitivity_compare.title }} fallback" />
+          </div>
+          <script type="application/json" id="{{ charts.sensitivity_compare.chart_id }}_json">{{ charts.sensitivity_compare.plotly_json }}</script>
+        </article>
+      </div>
+      <div class="table-wrap">
+        <p><a href="{{ csv_paths.strategy_compare }}" download>导出策略体检对比 CSV</a></p>
+        <table id="table_strategy_compare">
+          <thead>
+            <tr>
+              <th>fill_model</th>
+              <th>trade_count</th>
+              <th>total_return</th>
+              <th>max_drawdown</th>
+              <th>win_rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in compare_rows %}
+            <tr>
+              <td>{{ row.fill_model }}</td>
+              <td>{{ row.trade_count }}</td>
+              <td class="{{ 'status-positive' if row.total_return >= 0 else 'status-negative' }}">{{ "%.4f"|format(row.total_return) }}</td>
+              <td class="{{ 'status-negative' if row.max_drawdown < 0 else '' }}">{{ "%.4f"|format(row.max_drawdown) }}</td>
+              <td>{{ "%.4f"|format(row.win_rate) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="caveats">
+      <h2>Caveats</h2>
+      <p>
+        本报告为日频近似分析，无法覆盖盘中封单质量、回封节奏、临时停牌与复牌等微观结构因素；结论需要配合更细粒度数据复核。
+      </p>
+    </section>
+  </main>
+
+  {% if has_plotly and plotly_js_path %}
+  <script>
+    (function () {
+      var chartIds = [
+        "{{ charts.streak_distribution.chart_id }}",
+        "{{ charts.premium_by_streak.chart_id }}",
+        "{{ charts.sealed_nonsealed.chart_id }}",
+        "{{ charts.sensitivity_compare.chart_id }}"
+      ];
+      chartIds.forEach(function (chartId) {
+        var wrapper = document.getElementById(chartId + "_wrapper");
+        var host = document.getElementById(chartId);
+        var raw = document.getElementById(chartId + "_json");
+        if (!wrapper || !host || !raw || !window.Plotly) {
+          return;
+        }
+        try {
+          var figure = JSON.parse(raw.textContent || "{}");
+          Plotly.newPlot(host, figure.data || [], figure.layout || {}, {
+            responsive: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ["lasso2d", "select2d"]
+          }).then(function () {
+            wrapper.classList.add("ready");
+          });
+        } catch (_error) {
+          wrapper.classList.remove("ready");
+        }
+      });
+    })();
+  </script>
+  {% endif %}
+  <script>
+    (function () {
+      if (!window.jQuery || !jQuery.fn || !jQuery.fn.DataTable) {
+        return;
+      }
+      function initTable(tableId, defaultOrder) {
+        var table = $("#" + tableId);
+        if (!table.length) {
+          return;
+        }
+        table.DataTable({
+          paging: true,
+          searching: true,
+          ordering: true,
+          info: true,
+          pageLength: 10,
+          order: defaultOrder || [],
+          lengthMenu: [10, 25, 50, 100]
+        });
+      }
+      initTable("table_group_quantiles", [[0, "asc"]]);
+      initTable("table_trades", [[3, "asc"]]);
+      initTable("table_strategy_compare", [[2, "desc"]]);
+    })();
+  </script>
+</body>
+</html>

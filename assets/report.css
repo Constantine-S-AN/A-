@@ -1,0 +1,258 @@
+:root {
+  --font-body: "Source Han Sans SC", "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-heading: "Source Han Serif SC", "Songti SC", "STSong", serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --color-ink-900: #111827;
+  --color-ink-700: #334155;
+  --color-ink-500: #64748b;
+  --color-line: #dbe1ea;
+  --color-bg: #f3f6fb;
+  --color-surface: #ffffff;
+  --color-primary: #0f4c81;
+  --color-accent: #c0841a;
+  --color-positive: #0f7b43;
+  --color-negative: #b42318;
+  --color-code-bg: #f6f8fa;
+
+  --space-1: 6px;
+  --space-2: 12px;
+  --space-3: 18px;
+  --space-4: 24px;
+  --space-5: 32px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+
+  --shadow-card: 0 6px 18px rgba(17, 24, 39, 0.06);
+  --shadow-focus: 0 0 0 3px rgba(15, 76, 129, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(180deg, #eef3fa 0%, #f8fafd 220px, #f3f6fb 100%);
+  color: var(--color-ink-900);
+}
+
+body {
+  font-family: var(--font-body);
+  line-height: 1.6;
+  padding: var(--space-4);
+}
+
+.report-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.report-header {
+  background: radial-gradient(circle at top left, rgba(15, 76, 129, 0.16), transparent 42%),
+    var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-4);
+}
+
+.report-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 30px;
+  color: var(--color-primary);
+  letter-spacing: 0.2px;
+}
+
+.report-subtitle {
+  margin: var(--space-1) 0 0;
+  color: var(--color-ink-500);
+  font-size: 14px;
+}
+
+.metrics-grid {
+  margin-top: var(--space-3);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-2);
+}
+
+.metric-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-2) var(--space-3);
+}
+
+.metric-card .label {
+  color: var(--color-ink-500);
+  font-size: 13px;
+}
+
+.metric-card .value {
+  margin-top: var(--space-1);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-ink-900);
+}
+
+.section {
+  margin-top: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-3);
+}
+
+.section h2 {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-heading);
+  font-size: 22px;
+  color: var(--color-primary);
+}
+
+.section p {
+  margin: 0;
+  color: var(--color-ink-700);
+}
+
+.toc-links a {
+  margin-right: 4px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background: #ecf3fb;
+  color: #164a76;
+  z-index: 1;
+}
+
+th,
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-line);
+  text-align: right;
+  white-space: nowrap;
+}
+
+th:first-child,
+td:first-child {
+  text-align: left;
+}
+
+tbody tr:nth-child(2n) {
+  background: #fbfcff;
+}
+
+.status-positive {
+  color: var(--color-positive);
+}
+
+.status-negative {
+  color: var(--color-negative);
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-2);
+}
+
+.chart-card {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #fdfefe;
+}
+
+.chart-card header {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--color-ink-700);
+  border-bottom: 1px solid var(--color-line);
+  background: linear-gradient(180deg, rgba(15, 76, 129, 0.06), rgba(15, 76, 129, 0.01));
+}
+
+.chart-note {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--color-ink-500);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.plotly-wrapper {
+  padding: 8px;
+}
+
+.plotly-host {
+  min-height: 340px;
+  display: none;
+}
+
+.plotly-fallback {
+  width: 100%;
+  display: block;
+  border-radius: var(--radius-sm);
+}
+
+.plotly-wrapper.ready .plotly-host {
+  display: block;
+}
+
+.plotly-wrapper.ready .plotly-fallback {
+  display: none;
+}
+
+code,
+pre {
+  font-family: var(--font-mono);
+}
+
+pre {
+  margin: var(--space-2) 0 0;
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  overflow: auto;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: #08345d;
+  text-decoration: underline;
+}
+
+@media (max-width: 720px) {
+  body {
+    padding: var(--space-2);
+  }
+
+  .report-title {
+    font-size: 25px;
+  }
+}

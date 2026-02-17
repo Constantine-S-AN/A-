@@ -1,0 +1,8 @@
+ts_code,trade_date,label_limit_up,streak_up,label_one_word,label_sealed,open,close
+AAA,20240102,True,1,False,False,10.90,11.00
+AAA,20240103,True,2,True,True,11.00,11.00
+AAA,20240104,False,0,False,False,10.80,10.70
+BBB,20240102,True,1,True,True,12.00,12.00
+BBB,20240103,True,2,False,False,11.80,12.00
+BBB,20240104,False,0,False,False,11.50,11.60
+

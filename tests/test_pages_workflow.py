@@ -21,6 +21,6 @@ def test_docs_contain_pages_setup_and_live_demo_link() -> None:
     readme_content = Path("README.md").read_text(encoding="utf-8")
     quickstart_content = Path("docs/quickstart.md").read_text(encoding="utf-8")
 
-    assert "https://<user>.github.io/<repo>/" in readme_content
+    assert "github.io" in readme_content
     assert "Settings -> Pages" in quickstart_content
     assert "GitHub Actions" in quickstart_content

@@ -186,10 +186,19 @@ def test_run_demo_generates_html_report(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert (out_dir / "index.html").exists()
     assert (out_dir / "report.html").exists()
+    assert (out_dir / "summary.json").exists()
     assert (out_dir / "assets" / "report.css").exists()
     assert (out_dir / "assets" / "streak_next_close_p50.png").exists()
     assert (out_dir / "assets" / "next_open_ret_hist.png").exists()
     assert (out_dir / "assets" / "equity_compare.png").exists()
+    assert (out_dir / "tables" / "strategy_compare.csv").exists()
+
+    summary = json.loads((out_dir / "summary.json").read_text(encoding="utf-8"))
+    assert summary["limit_up_days"] > 0
+
+    strategy_compare = pd.read_csv(out_dir / "tables" / "strategy_compare.csv")
+    assert not strategy_compare.empty
+    assert strategy_compare["trade_count"].sum() > 0
 
 
 def test_export_pdf_writes_zip_fallback(tmp_path: Path) -> None:
@@ -235,6 +244,8 @@ def test_build_site_demo_generates_landing_and_archived_report(tmp_path: Path) -
     assert (site_dir / "demo-html.zip").exists()
     assert (demo_report_dir / "index.html").exists()
     assert (demo_report_dir / "report.html").exists()
+    summary = json.loads((demo_report_dir / "summary.json").read_text(encoding="utf-8"))
+    assert summary["limit_up_days"] > 0
     assert (demo_report_dir / "assets" / "streak_next_close_p50.png").exists()
     assert (demo_report_dir / "assets" / "sealed_vs_nonsealed_premium.png").exists()
     assert (demo_report_dir / "assets" / "equity_compare.png").exists()

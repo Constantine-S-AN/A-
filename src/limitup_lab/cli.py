@@ -35,6 +35,15 @@ def _project_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+def _resolve_demo_fixture_paths(project_root: Path) -> tuple[Path, Path]:
+    fixture_dir = project_root / "tests" / "fixtures"
+    preferred_daily = fixture_dir / "demo_daily_bars.csv"
+    preferred_instruments = fixture_dir / "demo_instruments.csv"
+    if preferred_daily.exists() and preferred_instruments.exists():
+        return preferred_daily, preferred_instruments
+    return fixture_dir / "daily_bars.csv", fixture_dir / "instruments.csv"
+
+
 def _read_json_if_exists(file_path: Path) -> dict[str, float | int]:
     if not file_path.exists():
         return {}
@@ -667,9 +676,7 @@ def run_demo(
 ) -> None:
     """Run demo pipeline with fixtures: ingest -> label -> stats -> report."""
     project_root = _project_root()
-    fixture_dir = project_root / "tests" / "fixtures"
-    daily_fixture = fixture_dir / "daily_bars.csv"
-    instruments_fixture = fixture_dir / "instruments.csv"
+    daily_fixture, instruments_fixture = _resolve_demo_fixture_paths(project_root)
     if not daily_fixture.exists():
         raise typer.BadParameter(f"缺少 fixture: {daily_fixture}")
     if not instruments_fixture.exists():

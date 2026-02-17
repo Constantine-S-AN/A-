@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import typer
 
+from limitup_lab.adapters import fetch_akshare_dataset
 from limitup_lab.io import read_daily_bars, read_instruments, write_parquet
 from limitup_lab.report import generate_html_report
 
@@ -42,6 +43,11 @@ def _resolve_demo_fixture_paths(project_root: Path) -> tuple[Path, Path]:
     if preferred_daily.exists() and preferred_instruments.exists():
         return preferred_daily, preferred_instruments
     return fixture_dir / "daily_bars.csv", fixture_dir / "instruments.csv"
+
+
+def _parse_symbols(symbols_text: str) -> list[str]:
+    symbol_list = [symbol.strip().upper() for symbol in symbols_text.split(",")]
+    return [symbol for symbol in symbol_list if symbol]
 
 
 def _read_json_if_exists(file_path: Path) -> dict[str, float | int]:
@@ -540,6 +546,66 @@ def ingest(
     try:
         write_parquet(canonical_daily_bars, daily_output_path)
         write_parquet(canonical_instruments, instruments_output_path)
+    except RuntimeError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+
+    typer.echo(f"Wrote canonical daily bars to {daily_output_path}")
+    typer.echo(f"Wrote canonical instruments to {instruments_output_path}")
+
+
+@app.command("fetch-akshare")
+def fetch_akshare(
+    symbols: str = typer.Option(
+        ...,
+        "--symbols",
+        help="逗号分隔 ts_code 列表，例如: 002261.SZ,603598.SH,000957.SZ",
+    ),
+    start_date: str = typer.Option(
+        ...,
+        "--start",
+        help="开始日期 YYYYMMDD，例如 20240101",
+    ),
+    end_date: str = typer.Option(
+        ...,
+        "--end",
+        help="结束日期 YYYYMMDD，例如 20240630",
+    ),
+    out_dir: Path = typer.Option(
+        Path("data/processed/real"),
+        "--out",
+        "-o",
+        help="输出目录（写出 daily.parquet 和 instruments.parquet）",
+    ),
+    adjust: str = typer.Option(
+        "",
+        "--adjust",
+        help="复权方式：空字符串不复权，或 qfq / hfq",
+    ),
+    with_names: bool = typer.Option(
+        False,
+        "--with-names/--without-names",
+        help="是否拉取名称并推断 ST（会额外请求全市场快照，默认关闭以加速）",
+    ),
+) -> None:
+    """Fetch real A-share daily bars from AkShare and write canonical parquet outputs."""
+    symbol_list = _parse_symbols(symbols)
+    try:
+        daily_bars, instruments = fetch_akshare_dataset(
+            ts_codes=symbol_list,
+            start_date=start_date,
+            end_date=end_date,
+            adjust=adjust,
+            include_names=with_names,
+        )
+    except (RuntimeError, ValueError) as exc:
+        raise typer.BadParameter(str(exc)) from exc
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    daily_output_path = out_dir / "daily.parquet"
+    instruments_output_path = out_dir / "instruments.parquet"
+    try:
+        write_parquet(daily_bars, daily_output_path)
+        write_parquet(instruments, instruments_output_path)
     except RuntimeError as exc:
         raise typer.BadParameter(str(exc)) from exc
 

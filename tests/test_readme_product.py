@@ -21,6 +21,7 @@ def test_readme_references_required_assets_and_commands() -> None:
     assert "assets/readme/table-preview.png" in readme_content
 
     assert "ingest" in readme_content
+    assert "fetch-akshare" in readme_content
     assert "label" in readme_content
     assert "stats" in readme_content
     assert "backtest" in readme_content
@@ -29,6 +30,7 @@ def test_readme_references_required_assets_and_commands() -> None:
 
     assert "python -m limitup_lab run-demo" in readme_content
     assert "python -m limitup_lab build-site --demo --out site" in readme_content
+    assert "python -m limitup_lab fetch-akshare" in readme_content
     assert "分钟线" in readme_content
     assert "L2" in readme_content
     assert "制度变迁" in readme_content

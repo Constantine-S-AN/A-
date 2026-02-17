@@ -13,6 +13,7 @@
 ## Features
 
 - Canonical schema + ingest pipeline (`CSV/Parquet -> canonical parquet`)
+- 真实数据接入：`fetch-akshare`（A 股日线，按 `ts_code` 拉取）
 - 日频标签体系：`limit_up`, `one_word`, `opened`, `sealed`, `streak_up`
 - 策略体检：`IDEAL` vs `CONSERVATIVE` 两种 fill 假设并行比较
 - 敏感性分析：收益、回撤、胜率、可买入样本损失对比
@@ -43,6 +44,22 @@ python -m limitup_lab run-demo
 ```bash
 python -m limitup_lab build-site --demo --out site
 ```
+
+## Real Data Example
+
+```bash
+python -m pip install akshare
+python -m limitup_lab fetch-akshare \
+  --symbols 002261.SZ,603598.SH,000957.SZ \
+  --start 20240101 \
+  --end 20240630 \
+  --out data/processed/real_case_2024h1
+python -m limitup_lab report \
+  --data data/processed/real_case_2024h1 \
+  --out reports/real_case_2024h1
+```
+
+详情见 `docs/real_data_example.md`。
 
 ## Limitations & Roadmap
 

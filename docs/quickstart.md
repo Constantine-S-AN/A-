@@ -58,3 +58,18 @@ python -m limitup_lab export-pdf \
    `python -m limitup_lab build-site --demo --out site`，并发布 `site/`。
 3. 在仓库 Settings -> Pages 中，将 Source 设为 `GitHub Actions`。
 4. 发布成功后，访问：`https://constantine-s-an.github.io/A-/`。
+
+## 真实数据（AkShare，可选）
+```bash
+python -m pip install akshare
+python -m limitup_lab fetch-akshare \
+  --symbols 002261.SZ,603598.SH,000957.SZ \
+  --start 20240101 \
+  --end 20240630 \
+  --out data/processed/real_case_2024h1
+python -m limitup_lab report \
+  --data data/processed/real_case_2024h1 \
+  --out reports/real_case_2024h1
+```
+
+更多示例见：`docs/real_data_example.md`。

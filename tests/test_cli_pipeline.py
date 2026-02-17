@@ -69,6 +69,7 @@ def test_cli_help_lists_subcommands() -> None:
     result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
     assert "ingest" in result.stdout
+    assert "fetch-akshare" in result.stdout
     assert "label" in result.stdout
     assert "stats" in result.stdout
     assert "report" in result.stdout
@@ -93,6 +94,7 @@ def test_module_entry_help() -> None:
     )
     assert result.returncode == 0
     assert "ingest" in result.stdout
+    assert "fetch-akshare" in result.stdout
     assert "label" in result.stdout
     assert "stats" in result.stdout
     assert "report" in result.stdout

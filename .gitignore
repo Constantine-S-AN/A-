@@ -3,6 +3,7 @@ __pycache__/
 .ruff_cache/
 *.egg-info/
 .venv/
+.venv*/
 site/
 reports/
 .DS_Store

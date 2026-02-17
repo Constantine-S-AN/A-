@@ -10,6 +10,7 @@ def test_pages_workflow_contains_required_steps() -> None:
     assert "actions/configure-pages@v5" in content
     assert "actions/upload-pages-artifact@v3" in content
     assert "actions/deploy-pages@v4" in content
+    assert "python scripts/generate_readme_assets.py" in content
     assert "python -m limitup_lab build-site --demo --out site" in content
     assert "python -m limitup_lab export-pdf" in content
     assert "--out site/demo.pdf" in content

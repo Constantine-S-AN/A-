@@ -182,6 +182,81 @@ def test_pipeline_generates_labels_stats_and_report(tmp_path: Path) -> None:
     assert equity_chart_png.exists()
 
 
+def test_fetch_akshare_command_writes_parquet(tmp_path: Path, monkeypatch) -> None:
+    out_dir = tmp_path / "real"
+
+    def fake_fetch_akshare_dataset(
+        ts_codes: list[str],
+        start_date: str,
+        end_date: str,
+        adjust: str,
+        include_names: bool,
+    ) -> tuple[pd.DataFrame, pd.DataFrame]:
+        assert ts_codes == ["002261.SZ", "603598.SH"]
+        assert start_date == "20240101"
+        assert end_date == "20240131"
+        assert adjust == ""
+        assert not include_names
+        daily_bars = pd.DataFrame(
+            [
+                {
+                    "ts_code": "002261.SZ",
+                    "trade_date": "20240102",
+                    "open": 10.0,
+                    "high": 10.5,
+                    "low": 9.9,
+                    "close": 10.2,
+                    "pre_close": 10.0,
+                    "vol": 100000.0,
+                    "amount": 1020000.0,
+                }
+            ]
+        )
+        instruments = pd.DataFrame(
+            [
+                {
+                    "ts_code": "002261.SZ",
+                    "name": "拓维信息",
+                    "board": "MAIN",
+                    "is_st": False,
+                    "list_date": "20080723",
+                },
+                {
+                    "ts_code": "603598.SH",
+                    "name": "引力传媒",
+                    "board": "MAIN",
+                    "is_st": False,
+                    "list_date": "20150527",
+                },
+            ]
+        )
+        return daily_bars, instruments
+
+    monkeypatch.setattr("limitup_lab.cli.fetch_akshare_dataset", fake_fetch_akshare_dataset)
+    result = runner.invoke(
+        app,
+        [
+            "fetch-akshare",
+            "--symbols",
+            "002261.SZ,603598.SH",
+            "--start",
+            "20240101",
+            "--end",
+            "20240131",
+            "--out",
+            str(out_dir),
+        ],
+    )
+
+    assert result.exit_code == 0
+    daily_output = out_dir / "daily.parquet"
+    instruments_output = out_dir / "instruments.parquet"
+    assert daily_output.exists()
+    assert instruments_output.exists()
+    assert "Wrote canonical daily bars" in result.stdout
+    assert "Wrote canonical instruments" in result.stdout
+
+
 def test_run_demo_generates_html_report(tmp_path: Path) -> None:
     out_dir = tmp_path / "demo"
     result = runner.invoke(app, ["run-demo", "--out", str(out_dir)])
